@@ -1,0 +1,127 @@
+I"�!<p>There is that one part in the codebase that is always bothering you when you touch or even just see it. “Let’s fix it later” is what you might be telling yourself and your colleagues.</p>
+
+<p>I finally got to work on such a part of our app. We’re dealing with some sort of sensitive data that shouldn’t be accessible to everyone. Instead, only premium users are eligible to access it. In order to realize this, our app makes two API calls. One to retrieve “open” data. The second, to fetch the secrets such as URLs and checksums.</p>
+
+<p>We’ve been using the same model to do that since forever. We even went one step further and stored this data in the same database table. Because accessing one database table instead of two, when selecting data, is more convenient. This meant that we stored the open data in the database and we persisted the secrets in the same table. Both actions were happening asynchronously and independently of each other. This meant that we filled the database table with a lot of nulls depending on which API request responded first. This behavior also forced us to look for persistent data sets before inserting new rows to not mistakenly override valid data.</p>
+
+<p>Fast forward to today. We’re in the middle of developing one of the biggest and most exciting new features, which allows us to redo certain parts of the app. The mentioned database table is part of the changes but we’re still stuck with two API requests that happen independently of each other. Luckily, SQLite can help. Before we go into how. Let’s mention the requirements.</p>
+<ul>
+  <li>we still have two independent API requests that deliver data in different formats</li>
+  <li>we want easy access to both open and secret data just as before</li>
+</ul>
+
+<p>Now to the solution. The urge to store both data structures in separate tables became bigger and thus, I gave it a try. Both open and secret data tables now house four fields whereas the previously unified table was described with seven. Perfect — we have simpler tables.</p>
+
+<p>But how do we access the data through a single interface in order to maintain simple access? SQLite’s database views come to the rescue. I did set up a view which queries both tables and joins the results. The resulting sets have the same structure as the initial table but without the nullability. We were able to get rid of it because we don’t need null as a placeholder anymore. The two new tables only define columns that are actually needed.</p>
+
+<p>The following code snippets are using annotations to mark classes as database relevant. In this case, we’re using the Room database library where @Entity results in a database table and @DatabaseView in a view.</p>
+
+<h3 id="previous-database-model">Previous database model</h3>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+</pre></td><td class="code"><pre><span class="nd">@Entity</span>
+<span class="kd">data class</span> <span class="nc">Meditation</span><span class="p">(</span>
+  <span class="kd">val</span> <span class="py">id</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">title</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+  <span class="kd">val</span> <span class="py">description</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+  <span class="kd">val</span> <span class="py">duration</span><span class="p">:</span> <span class="nc">Long</span><span class="p">?,</span>
+  <span class="kd">val</span> <span class="py">url</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+  <span class="kd">val</span> <span class="py">checksum</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+  <span class="kd">val</span> <span class="py">isUnlocked</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">?</span>
+<span class="p">)</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<h3 id="new-database-models">New database models</h3>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+</pre></td><td class="code"><pre><span class="nd">@Entity</span>
+<span class="kd">data class</span> <span class="nc">OpenData</span><span class="p">(</span>
+  <span class="kd">val</span> <span class="py">id</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">title</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">description</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">duration</span><span class="p">:</span> <span class="nc">Long</span>
+<span class="p">)</span>
+
+<span class="nd">@Entity</span>
+<span class="kd">data class</span> <span class="nc">SecretData</span><span class="p">(</span>
+  <span class="kd">val</span> <span class="py">id</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">url</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">checksum</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">isUnlocked</span><span class="p">:</span> <span class="nc">Boolean</span>
+<span class="p">)</span>
+
+<span class="nd">@DatabaseView</span><span class="p">(</span><span class="err">“””</span>
+  <span class="nc">SELECT</span> 
+    <span class="n">open_data</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
+    <span class="n">open_data</span><span class="p">.</span><span class="n">title</span><span class="p">,</span>
+    <span class="n">open_data</span><span class="p">.</span><span class="n">description</span><span class="p">,</span>
+    <span class="n">open_data</span><span class="p">.</span><span class="n">duration</span><span class="p">,</span>
+    <span class="n">scret_data</span><span class="p">.</span><span class="n">url</span><span class="p">,</span>
+    <span class="n">scret_data</span><span class="p">.</span><span class="n">checksum</span><span class="p">,</span>
+    <span class="n">scret_data</span><span class="p">.</span><span class="n">is_unlocked</span>
+  <span class="nc">FROM</span> <span class="n">open_data</span>
+  <span class="nc">JOIN</span> <span class="n">secret_data</span> <span class="nc">ON</span> <span class="n">secret_data</span><span class="p">.</span><span class="n">id</span> <span class="p">=</span> <span class="n">open_data</span><span class="p">.</span><span class="n">id</span> 
+<span class="err">“””</span><span class="p">)</span>
+<span class="kd">data class</span> <span class="nc">Meditation</span><span class="p">(</span>
+  <span class="kd">val</span> <span class="py">id</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">title</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">description</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">duration</span><span class="p">:</span> <span class="nc">Long</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">url</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">checksum</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span>
+  <span class="kd">val</span> <span class="py">isUnlocked</span><span class="p">:</span> <span class="nc">Boolean</span>
+<span class="p">)</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<h2 id="result">Result</h2>
+
+<ul>
+  <li>we still have two independent API requests that deliver data in different formats ✔️</li>
+  <li>we want easy access to both open and secret data just as before — it even got simpler because we got rid of unnecessary nullability ✔️</li>
+</ul>
+:ET

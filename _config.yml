@@ -1,0 +1,17 @@
+# Site settings
+title: Vitus' Personal Blog
+description: >
+    Vitus' Personal Blog
+author: Vitus Ortner
+email: vitusortner.dev@gmail.com
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "http://vitusortner.github.io/vitus.dev" # the base hostname & protocol for your site
+twitter_username: vitusortner
+github_username:  vitusortner
+
+# Build settings
+include: [_pages]
+markdown: kramdown
+permalink: /:year/:month/:title
+sass:
+    style: compressed
