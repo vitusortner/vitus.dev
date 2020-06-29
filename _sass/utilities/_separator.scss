@@ -4,9 +4,9 @@
 
 .u-separate {
     margin-right: .45rem;
-    margin-left: .25rem;
+    margin-left: .45rem;
     color: $c-base__01;
     &:after {
-        content: '\00a0/';
+        content: '·';
     }
 }
