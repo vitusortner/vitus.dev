@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Abstactions"
+title:  "Abstractions"
 subtitle:  "They are as scary as they sound"
 date:   2020-7-3 13:37:00
 categories: abstraction
