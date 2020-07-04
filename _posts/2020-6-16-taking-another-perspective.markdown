@@ -2,6 +2,7 @@
 layout: post
 title:  "Taking Another Perspective"
 subtitle:  "Utilizing Database Views"
+description: "Utilizing database views in our Android app allowed us to improve our codebase by getting rid of unnecessary nullability."
 date:   2020-6-16 13:07:56 -0500
 categories: database
 ---
