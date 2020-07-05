@@ -20,7 +20,8 @@ Now to the solution. The urge to store both data structures in separate tables b
 
 But how do we access the data through a single interface in order to maintain simple access? SQLite’s database views come to the rescue. I did set up a view which queries both tables and joins the results. The resulting sets have the same structure as the initial table but without the nullability. We were able to get rid of it because we don’t need null as a placeholder anymore. The two new tables only define columns that are actually needed.
 
-The following code snippets are using annotations to mark classes as database relevant. In this case, we’re using the Room database library where @Entity results in a database table and @DatabaseView in a view.
+*The following code snippets are using annotations to mark classes as database relevant.
+In this case, we’re using the Room database library where `@Entity` results in a database table and `@DatabaseView` in a view.*
 
 ### Previous database model
 
