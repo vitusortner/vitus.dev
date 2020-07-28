@@ -1,7 +1,8 @@
-# butane-jekyll-theme
+# [vitus.dev](https://vitus.dev)
 
-## Getting Started
-1. `git clone https://github.com/alexcarpenter/butane-jekyll-theme.git`
-2. `cd butane-jekyll-theme`
-3. `rm -rf CHANGELOG.md`
-4. `jekyll serve`
+A collection of front-end development related thoughts and everything else.
+
+### Theme
+
+Forked from [Butane Jekyll Theme](https://github.com/alexcarpenter/butane-jekyll-theme).
+Syntax theme based on [Solarized](https://ethanschoonover.com/solarized/).
