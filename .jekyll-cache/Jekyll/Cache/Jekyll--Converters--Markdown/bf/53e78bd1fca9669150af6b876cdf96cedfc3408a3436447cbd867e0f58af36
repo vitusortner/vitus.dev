@@ -1,0 +1,79 @@
+I"�<p>The naming of UI dimensions can be a challenging task especially when your codebase already uses three different naming conventions.
+I was confronted with such a dilemma just recently and made some discoveries which I’m sharing here.</p>
+
+<h2 id="t-shirt-sizes">T-shirt Sizes</h2>
+
+<p>First of all, I’m a fan of T-shirt sizes as they give a rough sense of dimension without the need for detail.
+When defining and using dimensions in the UI programming context though, we want exactly that.
+We want detail because more detailed and fine-grained than dimensions used in the UI context it doesn’t really get.
+A dimension defines a single concrete value.</p>
+
+<p>Don’t get me wrong, I still believe that they come in handy when consecutive but imprecise relations between dimensions are sufficient.
+The definition of UI dimensions doesn’t match these requirements unfortunately.</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="code"><pre>xsmall = 2
+small = 3
+medium = 5
+large = 7
+xlarge = 11
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<h2 id="enumeration">Enumeration</h2>
+
+<p>We’ve recently made the switch from scaling dimensions by the golden ratio to using multiples of four.
+We used to have a base size that got multiplied with ~1.618.
+Its result got multiplied with the same number and so on.
+This technique seems interesting at first but after using it for some time we realized that it introduces unnatural steps for mobile scales.
+The difference between two dimensions becomes big even for low numbers.</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="code"><pre>dimension_1 = 2
+dimension_2 = 3
+dimension_3 = 5
+dimension_4 = 7
+dimension_5 = 11
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<h2 id="literal---it-is-what-it-is">Literal - “it is what it is”</h2>
+
+<p>Finally, let’s take a look at an expressive style of naming dimensions.</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="code"><pre>dimension_2 = 2
+dimension_3 = 3
+dimension_5 = 5
+dimension_7 = 7
+dimension_11 = 11
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>It’s time to remove semantic names from the dimension layer and only use it on the style level.
+Whenever text is styled that will be used as a title, for instance, we simply refer to a dimension like <code class="language-plaintext highlighter-rouge">dimension_11</code> but refer to the style as <code class="language-plaintext highlighter-rouge">title</code>.
+Whenever I’m building UI that is made of reusable components, I simply check the style name in the designs and apply the matching style to the text view.
+On this level of abstraction, I don’t care about the used dimension at all.</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="code"><pre>title
+  text_size <span class="o">=</span> dimension_11  
+
+text_view
+  style <span class="o">=</span> title
+</pre></td></tr></tbody></table></code></pre></figure>
+
+:ET
