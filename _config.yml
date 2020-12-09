@@ -1,7 +1,7 @@
 # Site settings
-title: A Collection of Thoughts
+title: A collection of thoughts
 description: >
-    A Collection of Thoughts
+    A collection of thoughts
 author: Vitus Ortner
 email: vitusortner.dev@gmail.com
 baseurl: "" # the subpath of your site, e.g. /blog
