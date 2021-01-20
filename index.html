@@ -11,7 +11,6 @@ title: Home
         <li class="c-archives__item__separator">
         {% endif %}
             <h3><a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></h3>
-            <p>{{ post.date | date: "%b %-d, %Y" }}</p>
         </li>
     </ul>
 {% endfor %}
